@@ -1,0 +1,18 @@
+# Secrets
+.env
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+dist/
+build/
+
+# Agent run artifacts (evidence written per run; commit curated examples only)
+runs/
+
+# OS / editors
+.DS_Store
+.idea/
+.vscode/

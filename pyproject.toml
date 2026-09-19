@@ -1,0 +1,28 @@
+[project]
+name = "tf-migration-agent"
+version = "0.1.0"
+description = "Migration Engineer — a LangGraph multi-agent that finds, validates, and recommends the best open model on Nebius Token Factory for an existing LLM workload"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+dependencies = [
+    "langgraph>=1.0.0,<2.0.0",
+    "langchain-openai>=1.0.0,<2.0.0",
+    "langchain-core>=1.0.0,<2.0.0",
+    "openai>=1.60.0",
+    "pydantic>=2.9",
+    "pyyaml>=6.0",
+    "httpx>=0.27",
+    "python-dotenv>=1.0",
+    "rich>=13.7",
+]
+
+[project.scripts]
+tf-migrate = "agent.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/agent"]

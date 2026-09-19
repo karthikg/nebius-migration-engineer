@@ -1,0 +1,98 @@
+# Demo workload 1: support-ticket summarization currently running on GPT-4o.
+# The agent's job: find an open model on Token Factory that can take this over.
+name: support-ticket-summarization
+task_description: >
+  Summarize customer support tickets for a cloud infrastructure provider into
+  a structured JSON object (summary, sentiment, priority, product_area) used
+  to route tickets and feed dashboards. Output must be machine-parseable JSON
+  every single time — a malformed response breaks the routing pipeline.
+
+prompt_template: |
+  You analyze customer support tickets for a cloud infrastructure provider.
+  Read the ticket and produce a JSON object with exactly these keys:
+  - summary: one or two sentences describing the issue and what the customer needs
+  - sentiment: one of "positive", "neutral", "negative"
+  - priority: one of "low", "medium", "high", "urgent"
+  - product_area: one of "billing", "compute", "storage", "api", "console"
+
+  Ticket:
+  {input}
+
+max_output_tokens: 300
+
+volume:
+  requests_per_day: 40000
+  avg_input_tokens: 1200
+  avg_output_tokens: 150
+
+baseline:
+  name: gpt-4o
+  input_price_per_mtok: 2.50
+  output_price_per_mtok: 10.00
+
+constraints:
+  require_valid_json: true
+  required_keys: [summary, sentiment, priority, product_area]
+  max_p95_latency_s: 6.0
+  min_cost_reduction_pct: 60
+  min_quality_score: 4.0
+
+samples:
+  - input: |
+      Subject: Charged twice for the same GPU cluster in August
+
+      Hi, I just went through our August invoice and we were billed $4,812.40
+      twice for cluster "training-prod-eu" (invoice lines 14 and 22). We only
+      ran one cluster that month. I've attached both line items. This is the
+      second billing issue in three months and my finance team is escalating
+      internally. Please refund the duplicate charge and explain how this
+      happened. We need this resolved before our month-end close on Friday.
+    reference_output: |
+      {"summary": "Customer was double-billed $4,812.40 for GPU cluster training-prod-eu on the August invoice and needs a refund plus an explanation before their Friday month-end close.", "sentiment": "negative", "priority": "high", "product_area": "billing"}
+
+  - input: |
+      Subject: Request to raise H100 quota for research project
+
+      Hello team, we're starting a new fine-tuning project in October and our
+      current quota of 16 H100 GPUs in the eu-north region won't be enough.
+      Could we get it raised to 64? We don't need it immediately — the project
+      kicks off in about three weeks. Happy to provide details about expected
+      utilization if that helps the capacity planning. Thanks!
+    reference_output: |
+      {"summary": "Customer requests an H100 GPU quota increase from 16 to 64 in eu-north for a fine-tuning project starting in about three weeks.", "sentiment": "neutral", "priority": "medium", "product_area": "compute"}
+
+  - input: |
+      Subject: URGENT - production inference API returning 429s
+
+      Our production traffic is being throttled RIGHT NOW. Since roughly 09:40
+      UTC about 30% of our chat completion requests return 429 even though our
+      dashboard says we're at 60% of our rate limit. This is customer-facing —
+      our app is timing out for end users and we're losing signups. We're on
+      the scale tier, account id acct-99231. Need someone on this immediately,
+      this is costing us revenue every minute.
+    reference_output: |
+      {"summary": "Production chat completion requests are receiving 429 rate-limit errors since 09:40 UTC despite the dashboard showing 60% utilization, causing customer-facing outages; customer demands immediate attention.", "sentiment": "negative", "priority": "urgent", "product_area": "api"}
+
+  - input: |
+      Subject: Loving the new object storage — question about lifecycle rules
+
+      Just wanted to say the new object storage tier has been great, migration
+      from our previous provider was painless and latency is noticeably better.
+      One question: is there a way to set lifecycle rules so objects older than
+      90 days automatically move to cold storage? I found the docs page on
+      storage classes but couldn't see anything about automatic transitions.
+      No rush on this — just planning our archival strategy.
+    reference_output: |
+      {"summary": "Happy customer asks whether lifecycle rules can automatically transition objects older than 90 days to cold storage; no urgency.", "sentiment": "positive", "priority": "low", "product_area": "storage"}
+
+  - input: |
+      Subject: Whole team locked out of the console after SSO change
+
+      We switched our identity provider from Okta to Entra ID yesterday and
+      now none of our 14 engineers can log into the web console — everyone
+      gets "authentication failed" after the SSO redirect. API keys still work
+      so our workloads are fine, but we can't manage anything through the UI,
+      and we have a deployment review scheduled tomorrow morning. We opened
+      ticket #48812 last night but haven't heard back yet.
+    reference_output: |
+      {"summary": "After migrating SSO from Okta to Entra ID, all 14 engineers get authentication failures on console login; API access still works but the team needs console access before tomorrow's deployment review and is awaiting a response on ticket #48812.", "sentiment": "negative", "priority": "high", "product_area": "console"}

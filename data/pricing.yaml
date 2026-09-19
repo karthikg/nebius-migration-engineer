@@ -1,0 +1,75 @@
+# USD per 1M tokens on Nebius Token Factory — OFFLINE FALLBACK ONLY.
+#
+# The agent's primary pricing source is the live catalog itself:
+# GET /v1/models?verbose=true returns per-model pricing, and that always
+# wins over this file. This table exists so cost analysis still works
+# offline / in tests, and as a template for endpoints that don't expose
+# pricing metadata. Values below were snapshotted from the live catalog
+# on 2026-09-19.
+models:
+  MiniMaxAI/MiniMax-M3:
+    input_price_per_mtok: 0.30
+    output_price_per_mtok: 1.20
+  NousResearch/Hermes-4-405B:
+    input_price_per_mtok: 1.00
+    output_price_per_mtok: 3.00
+  Qwen/Qwen3-235B-A22B-Instruct-2507:
+    input_price_per_mtok: 0.20
+    output_price_per_mtok: 0.60
+  Qwen/Qwen3-30B-A3B-Instruct-2507:
+    input_price_per_mtok: 0.10
+    output_price_per_mtok: 0.30
+  Qwen/Qwen3.5-397B-A17B:
+    input_price_per_mtok: 0.60
+    output_price_per_mtok: 3.60
+  deepseek-ai/DeepSeek-V4-Flash-0731:
+    input_price_per_mtok: 0.14
+    output_price_per_mtok: 0.28
+  deepseek-ai/DeepSeek-V4-Pro:
+    input_price_per_mtok: 1.75
+    output_price_per_mtok: 3.50
+  deepseek-ai/DeepSeek-V4-Pro-0813:
+    input_price_per_mtok: 1.32
+    output_price_per_mtok: 3.96
+  deepseek-ai/DeepSeek-V4.1-Flash:
+    input_price_per_mtok: 0.30
+    output_price_per_mtok: 1.20
+  google/gemma-3-27b-it:
+    input_price_per_mtok: 0.10
+    output_price_per_mtok: 0.30
+  moonshotai/Kimi-K2.6:
+    input_price_per_mtok: 0.95
+    output_price_per_mtok: 4.00
+  moonshotai/Kimi-K2.7-Code:
+    input_price_per_mtok: 0.95
+    output_price_per_mtok: 4.00
+  moonshotai/Kimi-K3:
+    input_price_per_mtok: 3.00
+    output_price_per_mtok: 15.00
+  nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B:
+    input_price_per_mtok: 0.06
+    output_price_per_mtok: 0.24
+  nvidia/Nemotron-3-Ultra-550b-a55b:
+    input_price_per_mtok: 1.00
+    output_price_per_mtok: 3.00
+  nvidia/Nemotron-3_5-Lightning:
+    input_price_per_mtok: 0.06
+    output_price_per_mtok: 0.24
+  nvidia/nemotron-3-super-120b-a12b:
+    input_price_per_mtok: 0.30
+    output_price_per_mtok: 0.90
+  openai/gpt-oss-120b:
+    input_price_per_mtok: 0.15
+    output_price_per_mtok: 0.60
+  zai-org/GLM-5.1:
+    input_price_per_mtok: 1.40
+    output_price_per_mtok: 4.40
+  zai-org/GLM-5.2:
+    input_price_per_mtok: 1.40
+    output_price_per_mtok: 4.40
+  zai-org/GLM-5.3:
+    input_price_per_mtok: 1.40
+    output_price_per_mtok: 4.40
+  zai-org/GLM-5.3-Flash:
+    input_price_per_mtok: 0.15
+    output_price_per_mtok: 0.50

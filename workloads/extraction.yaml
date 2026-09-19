@@ -1,0 +1,117 @@
+# Demo workload 2: invoice field extraction currently running on GPT-4o.
+name: invoice-field-extraction
+task_description: >
+  Extract structured accounting fields from raw invoice text (OCR output or
+  pasted email bodies) for an accounts-payable automation pipeline. Downstream
+  systems consume the JSON directly, so field names, date format (YYYY-MM-DD)
+  and numeric types must be exact.
+
+prompt_template: |
+  Extract structured fields from the invoice text below.
+  Return a JSON object with exactly these keys:
+  - vendor_name (string)
+  - invoice_number (string)
+  - invoice_date (string, YYYY-MM-DD)
+  - currency (ISO 4217 code, e.g. "USD")
+  - total_amount (number, no currency symbol)
+  - line_item_count (integer)
+
+  Invoice:
+  {input}
+
+max_output_tokens: 200
+
+volume:
+  requests_per_day: 12000
+  avg_input_tokens: 900
+  avg_output_tokens: 120
+
+baseline:
+  name: gpt-4o
+  input_price_per_mtok: 2.50
+  output_price_per_mtok: 10.00
+
+constraints:
+  require_valid_json: true
+  required_keys: [vendor_name, invoice_number, invoice_date, currency, total_amount, line_item_count]
+  max_p95_latency_s: 5.0
+  min_cost_reduction_pct: 70
+  min_quality_score: 4.2
+
+samples:
+  - input: |
+      NORTHWIND OFFICE SUPPLY LTD
+      14 Harbour Road, Dublin 2, Ireland — VAT IE6388047V
+
+      INVOICE
+      Invoice No: NW-2026-04417        Date: 12 August 2026
+      Bill to: Meridian Analytics GmbH
+
+      Qty  Description                     Unit      Amount
+      12   A4 copier paper (5-ream box)    18.50     222.00
+      4    Toner cartridge HP 207X         89.00     356.00
+      2    Ergonomic desk chair            249.00    498.00
+
+      Subtotal: 1,076.00
+      VAT (23%): 247.48
+      TOTAL DUE: EUR 1,323.48
+      Payment terms: Net 30
+    reference_output: |
+      {"vendor_name": "Northwind Office Supply Ltd", "invoice_number": "NW-2026-04417", "invoice_date": "2026-08-12", "currency": "EUR", "total_amount": 1323.48, "line_item_count": 3}
+
+  - input: |
+      From: billing@cloudspan.io
+      Subject: Your CloudSpan invoice CS-88109
+
+      Hi Meridian team, please find your monthly invoice below.
+
+      CloudSpan Inc. — 2211 Mission St, San Francisco, CA
+      Invoice: CS-88109
+      Issued: 2026-09-01
+      Period: August 2026
+
+      Compute (743 hrs x $2.10/hr) ............ $1,560.30
+      Managed Postgres (1 instance) ........... $340.00
+      Egress (2.1 TB) ......................... $189.00
+      Support plan (Business) ................. $500.00
+
+      Amount due (USD): $2,589.30 by 2026-10-01
+    reference_output: |
+      {"vendor_name": "CloudSpan Inc.", "invoice_number": "CS-88109", "invoice_date": "2026-09-01", "currency": "USD", "total_amount": 2589.30, "line_item_count": 4}
+
+  - input: |
+      RECHNUNG / INVOICE
+      Bergmann Industrietechnik GmbH
+      Lindenstrasse 88, 70173 Stuttgart
+
+      Rechnungsnummer: BI-77031-B
+      Rechnungsdatum: 03.07.2026
+      Kunde: Meridian Analytics GmbH, Kundennr. 10442
+
+      Pos 1  Wartungsvertrag Q3/2026 Pumpensysteme     2.400,00 EUR
+      Pos 2  Ersatzteile Dichtungssatz DN80 (x6)         318,60 EUR
+
+      Nettobetrag: 2.718,60 EUR
+      MwSt 19%: 516,53 EUR
+      Gesamtbetrag: 3.235,13 EUR
+      Zahlbar innerhalb 14 Tagen ohne Abzug.
+    reference_output: |
+      {"vendor_name": "Bergmann Industrietechnik GmbH", "invoice_number": "BI-77031-B", "invoice_date": "2026-07-03", "currency": "EUR", "total_amount": 3235.13, "line_item_count": 2}
+
+  - input: |
+      tax invoice — quickfreight logistics pty ltd (ABN 53 004 085 616)
+      po box 1180, melbourne vic 3001
+
+      inv #: QF/2026/09112     date: 28/08/2026
+      shipment ref: SYD-AKL-20260819
+
+      ocean freight sydney->auckland 1x40ft ......... 3,180.00
+      port handling & documentation ................. 425.50
+      fuel surcharge ................................ 212.25
+      marine insurance .............................. 96.40
+      gst (10%) ..................................... 391.42
+
+      total incl. gst: AUD 4,305.57
+      terms: due on receipt
+    reference_output: |
+      {"vendor_name": "Quickfreight Logistics Pty Ltd", "invoice_number": "QF/2026/09112", "invoice_date": "2026-08-28", "currency": "AUD", "total_amount": 4305.57, "line_item_count": 5}
