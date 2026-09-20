@@ -6,6 +6,51 @@ partner would use for a scheduled evaluation job or an internal service.
 
 ## 1. Create the VM
 
+### Option A: Nebius CLI (what we actually used)
+
+Gotchas learned in the field:
+
+- **Quota**: fresh tenants have `compute.instance.non-gpu.vcpu = 0` in some
+  regions (e.g. eu-north1, us-central1) and 200 in others (uk-south1,
+  eu-west1, …). Check before you pick a region:
+  `nebius quotas quota-allowance list --parent-id <tenant-id>`
+- **SSH key**: cloud-init is the only way in. A passphrase-protected key
+  won't work for unattended automation — use a dedicated passphrase-less
+  deploy key.
+
+```bash
+# cloud-init: create the login user with your public key(s)
+cat > cloudinit.yaml <<EOF
+#cloud-config
+users:
+  - name: ubuntu
+    groups: sudo
+    shell: /bin/bash
+    sudo: "ALL=(ALL) NOPASSWD:ALL"
+    ssh_authorized_keys:
+      - $(cat ~/.ssh/<your-key>.pub)
+EOF
+
+nebius compute instance create \
+  --parent-id <project-id> \
+  --name migration-agent \
+  --resources-platform cpu-d3 \
+  --resources-preset 4vcpu-16gb \
+  --boot-disk-attach-mode read_write \
+  --boot-disk-managed-disk-name migration-agent-boot \
+  --boot-disk-managed-disk-type network_ssd \
+  --boot-disk-managed-disk-size-gibibytes 64 \
+  --boot-disk-managed-disk-source-image-family-image-family ubuntu24.04-driverless \
+  --network-interfaces '[{"name":"eth0","subnet_id":"<subnet-id>","ip_address":{},"public_ip_address":{}}]' \
+  --cloud-init-user-data "$(cat cloudinit.yaml)"
+```
+
+Get the subnet with `nebius vpc subnet list --parent-id <project-id>`; the
+public IP appears in `nebius compute instance get` once RUNNING. Expect
+sshd to accept connections a few minutes *after* the state says RUNNING.
+
+### Option B: Web console
+
 In the Nebius console → **Compute** → **Create virtual machine**:
 
 - **Image**: Ubuntu 24.04 LTS
