@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Bootstrap the Migration Engineer on a fresh Nebius Compute VM (Ubuntu 22.04/24.04).
 # Usage (on the VM):
-#   export REPO_URL=https://github.com/<you>/nebius-migration-engineer.git
-#   curl -fsSL https://raw.githubusercontent.com/<you>/nebius-migration-engineer/main/scripts/bootstrap_vm.sh | bash
+#   export REPO_URL=https://github.com/karthikg/nebius-migration-engineer.git
+#   curl -fsSL https://raw.githubusercontent.com/karthikg/nebius-migration-engineer/main/scripts/bootstrap_vm.sh | bash
 # Or clone first and run: bash scripts/bootstrap_vm.sh
 set -euo pipefail
 

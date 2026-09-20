@@ -27,7 +27,7 @@ intake → plan ──► evaluate (parallel, one per candidate) ──► judge
 Requires Python 3.11+ and a Token Factory API key.
 
 ```bash
-git clone https://github.com/<you>/nebius-migration-engineer.git
+git clone https://github.com/karthikg/nebius-migration-engineer.git
 cd nebius-migration-engineer
 python3 -m venv .venv && source .venv/bin/activate
 pip install -e .

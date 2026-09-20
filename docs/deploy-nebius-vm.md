@@ -64,8 +64,8 @@ In the Nebius console → **Compute** → **Create virtual machine**:
 SSH in and run the bootstrap script:
 
 ```bash
-export REPO_URL=https://github.com/<you>/nebius-migration-engineer.git
-curl -fsSL "https://raw.githubusercontent.com/<you>/nebius-migration-engineer/main/scripts/bootstrap_vm.sh" | bash
+export REPO_URL=https://github.com/karthikg/nebius-migration-engineer.git
+curl -fsSL "https://raw.githubusercontent.com/karthikg/nebius-migration-engineer/main/scripts/bootstrap_vm.sh" | bash
 ```
 
 It installs Python + git, clones the repo, creates a venv, installs the
