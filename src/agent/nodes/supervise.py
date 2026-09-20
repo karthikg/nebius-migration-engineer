@@ -137,6 +137,15 @@ def supervise(state: GraphState) -> dict:
         if action == "accept":
             statuses[d.model_id] = "accepted"
             log.append(narrate(f"supervise: ACCEPT {d.model_id} — {d.reasoning}"))
+            # Latency is a soft constraint (few samples on a shared endpoint =
+            # noisy p95), but a waiver must be visible, not silent.
+            max_p95 = w.constraints.max_p95_latency_s
+            if max_p95 and run and run.p95_latency_s > max_p95:
+                log.append(narrate(
+                    f"supervise: NOTE — {d.model_id} accepted with a p95 waiver "
+                    f"({run.p95_latency_s:.2f}s > {max_p95}s on {run.n_samples} samples); "
+                    f"load-test before cutover"
+                ))
         elif action == "eliminate":
             statuses[d.model_id] = "eliminated"
             log.append(narrate(f"supervise: ELIMINATE {d.model_id} — {d.reasoning}"))

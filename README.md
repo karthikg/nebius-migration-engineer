@@ -67,6 +67,22 @@ tf-migrate run workloads/summarization.yaml
 You'll watch the decision log stream as the graph executes, then get a
 verdict, an evidence table, and a full report under `runs/<timestamp>/`.
 
+**Step 3 — or demo it in the browser:**
+
+```bash
+tf-migrate serve
+```
+
+opens a local web UI at `http://127.0.0.1:8765`: pick a workload, optionally
+pin candidates from the live catalog, and watch the agent's decision log
+stream node-by-node — plan tool calls, per-candidate evaluations, judge
+scores, supervisor rulings, retries — ending in the verdict panel and
+evidence table. There's also a one-click preflight matrix. The page is a
+single dependency-free HTML file ([web/index.html](web/index.html)) served by
+a small FastAPI app ([src/agent/server.py](src/agent/server.py)) that streams
+the LangGraph run's own node updates; to demo from a Nebius VM, run it there
+and tunnel: `ssh -L 8765:localhost:8765 ubuntu@<vm-ip>`.
+
 Other entry points:
 
 ```bash

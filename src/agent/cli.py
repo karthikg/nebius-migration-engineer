@@ -98,6 +98,14 @@ def cmd_preflight(args: argparse.Namespace) -> int:
     return 1 if critical_fail else 0
 
 
+def cmd_serve(args: argparse.Namespace) -> int:
+    from .server import main as serve_main
+
+    console.print(f"[bold]Migration Engineer UI[/bold] → http://{args.host}:{args.port}")
+    serve_main(host=args.host, port=args.port)
+    return 0
+
+
 def cmd_models(args: argparse.Namespace) -> int:
     from .tools import fetch_catalog
 
@@ -127,6 +135,11 @@ def main() -> None:
     p_pre.add_argument("-m", "--models", nargs="*", help="Model ids (default: supervisor, judge, candidate pool)")
     p_pre.add_argument("--markdown", action="store_true", help="Also print a markdown matrix")
     p_pre.set_defaults(fn=cmd_preflight)
+
+    p_serve = sub.add_parser("serve", help="Serve the demo web UI")
+    p_serve.add_argument("--host", default="127.0.0.1")
+    p_serve.add_argument("--port", type=int, default=8765)
+    p_serve.set_defaults(fn=cmd_serve)
 
     p_models = sub.add_parser("models", help="List the live Token Factory catalog")
     p_models.add_argument("keyword", nargs="?", help="Filter substring")

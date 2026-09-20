@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Migration Engineer</title>
+<style>
+  :root {
+    --bg: #0b0f14; --panel: #121821; --panel-2: #0e141c; --border: #1f2a38;
+    --text: #dce5ef; --dim: #8093a7; --accent: #35d0ba; --accent-2: #4aa3ff;
+    --ok: #3ecf8e; --warn: #f5b83d; --err: #f4645f;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  header {
+    display: flex; align-items: baseline; gap: 14px; padding: 18px 28px;
+    border-bottom: 1px solid var(--border); background: var(--panel-2);
+  }
+  header .brand { font-size: 19px; font-weight: 700; letter-spacing: .2px; }
+  header .brand em { color: var(--accent); font-style: normal; }
+  header .sub { color: var(--dim); font-size: 13px; }
+  header .pill {
+    margin-left: auto; font-size: 12px; padding: 4px 12px; border-radius: 999px;
+    border: 1px solid var(--border); color: var(--dim);
+  }
+  header .pill.running { color: var(--accent); border-color: var(--accent); }
+  main { display: grid; grid-template-columns: 330px 1fr; gap: 20px; padding: 20px 28px; max-width: 1500px; margin: 0 auto; }
+  @media (max-width: 900px) { main { grid-template-columns: 1fr; padding: 16px; } }
+  aside section { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; }
+  h2 { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--dim); margin: 0 0 10px; }
+  .wl { border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; cursor: pointer; }
+  .wl:hover { border-color: var(--accent-2); }
+  .wl.sel { border-color: var(--accent); background: rgba(53,208,186,.06); }
+  .wl .n { font-weight: 600; font-size: 14px; }
+  .wl .d { color: var(--dim); font-size: 12px; margin-top: 3px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; max-height: 180px; overflow-y: auto; }
+  .chip {
+    font-size: 11.5px; font-family: var(--mono); padding: 3px 9px; border-radius: 999px;
+    border: 1px solid var(--border); color: var(--dim); cursor: pointer; user-select: none;
+  }
+  .chip.sel { border-color: var(--accent); color: var(--accent); background: rgba(53,208,186,.08); }
+  .hint { color: var(--dim); font-weight: 400; text-transform: none; letter-spacing: 0; }
+  button {
+    width: 100%; padding: 11px; border-radius: 8px; border: 0; cursor: pointer;
+    font-size: 14.5px; font-weight: 650; background: var(--accent); color: #04211c; margin-bottom: 8px;
+  }
+  button:disabled { opacity: .45; cursor: default; }
+  button.secondary { background: transparent; border: 1px solid var(--border); color: var(--text); font-weight: 500; }
+  /* pipeline */
+  #pipeline { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+  .pnode {
+    font-size: 12.5px; font-family: var(--mono); padding: 6px 12px; border-radius: 7px;
+    border: 1px solid var(--border); color: var(--dim); background: var(--panel);
+  }
+  .pnode.done { color: var(--text); border-color: #2c3c50; }
+  .pnode.active { color: var(--accent); border-color: var(--accent); box-shadow: 0 0 12px rgba(53,208,186,.25); }
+  .parrow { color: #33465e; font-size: 12px; }
+  /* verdict */
+  #verdict { border-radius: 10px; padding: 18px 20px; margin-bottom: 16px; border: 1px solid var(--border); background: var(--panel); }
+  #verdict.migrate { border-color: rgba(62,207,142,.5); }
+  #verdict.dont { border-color: rgba(245,184,61,.5); }
+  #verdict .vline { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+  #verdict .vword { font-size: 22px; font-weight: 800; letter-spacing: .5px; }
+  .migrate .vword { color: var(--ok); } .dont .vword { color: var(--warn); }
+  #verdict .vmodel { font-family: var(--mono); font-size: 16px; }
+  #verdict .vconf { margin-left: auto; color: var(--dim); font-size: 13px; }
+  #verdict .vsum { margin-top: 8px; color: var(--text); }
+  #verdict .vnotes { margin-top: 10px; color: var(--dim); font-size: 13.5px; }
+  table { width: 100%; border-collapse: collapse; margin-top: 14px; font-size: 13.5px; }
+  th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--border); }
+  th { color: var(--dim); font-size: 11.5px; text-transform: uppercase; letter-spacing: .8px; }
+  td.mono { font-family: var(--mono); font-size: 12.5px; }
+  .st-accepted { color: var(--ok); } .st-eliminated { color: var(--err); } .st-active { color: var(--dim); }
+  ul.cavs { margin: 8px 0 0; padding-left: 18px; color: var(--dim); font-size: 13px; }
+  /* log */
+  #log {
+    background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px 16px; min-height: 320px; max-height: 560px; overflow-y: auto;
+    font-family: var(--mono); font-size: 12.8px; line-height: 1.65;
+  }
+  .ll { white-space: pre-wrap; word-break: break-word; margin-bottom: 2px; }
+  .ll .tag { font-weight: 700; }
+  .t-intake { color: var(--accent-2); } .t-plan { color: #b48bf2; } .t-evaluate { color: var(--accent); }
+  .t-judge { color: var(--warn); } .t-costs { color: #6fd66f; } .t-supervise { color: #ff9d6f; } .t-report { color: var(--ok); }
+  .ll.err { color: var(--err); }
+  .empty { color: var(--dim); font-family: inherit; }
+  /* preflight */
+  #preflight-out table { font-size: 11.5px; } #preflight-out td, #preflight-out th { padding: 4px 6px; }
+  #preflight-out .ok { color: var(--ok); } #preflight-out .no { color: var(--err); }
+  #preflight-out td.model { font-family: var(--mono); font-size: 10.5px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">Migration <em>Engineer</em></div>
+  <div class="sub">LangGraph multi-agent on Nebius Token Factory</div>
+  <div class="pill" id="pill">idle</div>
+</header>
+<main>
+  <aside>
+    <section>
+      <h2>Workload</h2>
+      <div id="wl-list"><div class="empty">loading…</div></div>
+    </section>
+    <section>
+      <h2>Pin candidates <span class="hint">(optional — planner decides if none)</span></h2>
+      <div class="chips" id="chips"><div class="empty">loading catalog…</div></div>
+    </section>
+    <button id="run-btn">▶&nbsp; Run migration evaluation</button>
+    <button id="pf-btn" class="secondary">Preflight selected models</button>
+    <section id="preflight-out" hidden></section>
+  </aside>
+  <div>
+    <div id="pipeline"></div>
+    <div id="verdict" hidden></div>
+    <div id="log"><div class="empty">Pick a workload and press Run. The agent's decision log streams here live.</div></div>
+  </div>
+</main>
+<script>
+const NODES = ["intake","plan","evaluate","judge","costs","supervise","report"];
+const $ = id => document.getElementById(id);
+let selWorkload = null, selModels = new Set(), runId = null, cursor = 0, timer = null;
+
+function pipeline(active, done) {
+  $("pipeline").innerHTML = NODES.map((n,i) =>
+    `<span class="pnode ${done.has(n)?"done":""} ${n===active?"active":""}">${n}</span>` +
+    (i<NODES.length-1?`<span class="parrow">▸</span>`:"")).join("");
+}
+pipeline(null, new Set());
+
+async function j(url, opts) {
+  const r = await fetch(url, opts);
+  if (!r.ok) throw new Error((await r.json().catch(()=>({}))).detail || r.statusText);
+  return r.json();
+}
+
+async function init() {
+  try {
+    const wls = await j("/api/workloads");
+    $("wl-list").innerHTML = wls.map(w =>
+      `<div class="wl" data-f="${w.file}"><div class="n">${w.name}</div>
+       <div class="d">${w.task}</div>
+       <div class="d">baseline: ${w.baseline} · ${w.samples} samples</div></div>`).join("");
+    document.querySelectorAll(".wl").forEach(el => el.onclick = () => {
+      document.querySelectorAll(".wl").forEach(x=>x.classList.remove("sel"));
+      el.classList.add("sel"); selWorkload = el.dataset.f;
+    });
+    const first = document.querySelector(".wl"); if (first) first.click();
+  } catch(e) { $("wl-list").innerHTML = `<div class="empty">error: ${e.message}</div>`; }
+  try {
+    const ms = await j("/api/models");
+    $("chips").innerHTML = ms.filter(m=>!m.id.includes("Embedding")).map(m =>
+      `<span class="chip" data-id="${m.id}" title="features: ${m.features.join(", ")||"none"} · ctx ${m.context_length}">${m.id.split("/").pop()}</span>`).join("");
+    document.querySelectorAll(".chip").forEach(c => c.onclick = () => {
+      const id = c.dataset.id;
+      if (selModels.has(id)) { selModels.delete(id); c.classList.remove("sel"); }
+      else if (selModels.size < 3) { selModels.add(id); c.classList.add("sel"); }
+    });
+  } catch(e) { $("chips").innerHTML = `<div class="empty">catalog error: ${e.message}</div>`; }
+}
+init();
+
+function logLine(text) {
+  const m = text.match(/^([a-z]+)(:| \()/);
+  const tag = m ? m[1] : "";
+  const div = document.createElement("div");
+  div.className = "ll";
+  div.innerHTML = tag ? `<span class="tag t-${tag}">${text.slice(0, tag.length)}</span>${esc(text.slice(tag.length))}` : esc(text);
+  $("log").appendChild(div); $("log").scrollTop = $("log").scrollHeight;
+}
+const esc = s => s.replace(/[&<>]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+
+$("run-btn").onclick = async () => {
+  if (!selWorkload) return;
+  $("run-btn").disabled = true; $("pill").textContent = "running"; $("pill").classList.add("running");
+  $("log").innerHTML = ""; $("verdict").hidden = true; cursor = 0;
+  const doneNodes = new Set();
+  try {
+    const body = { workload: selWorkload };
+    if (selModels.size) body.candidates = [...selModels];
+    const res = await j("/api/runs", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify(body) });
+    runId = res.run_id;
+  } catch(e) {
+    logLine("error: " + e.message); finish(); return;
+  }
+  timer = setInterval(async () => {
+    try {
+      const d = await j(`/api/runs/${runId}?after=${cursor}`);
+      cursor = d.next;
+      for (const ev of d.events) {
+        doneNodes.add(ev.node); pipeline(ev.node, doneNodes);
+        for (const line of ev.log) logLine(line);
+      }
+      if (d.status === "error") { const e=document.createElement("div"); e.className="ll err"; e.textContent = "RUN FAILED: " + d.error; $("log").appendChild(e); finish(); }
+      if (d.status === "done") { pipeline(null, new Set(NODES)); render(d.final); finish(); }
+    } catch(e) { logLine("poll error: " + e.message); finish(); }
+  }, 700);
+};
+
+function finish() { clearInterval(timer); $("run-btn").disabled = false; $("pill").textContent = "idle"; $("pill").classList.remove("running"); }
+
+function render(final) {
+  const r = final && final.recommendation;
+  if (!r) return;
+  const v = $("verdict");
+  v.hidden = false;
+  v.className = r.verdict === "MIGRATE" ? "migrate" : "dont";
+  const rows = r.rows.map(x => `<tr>
+    <td class="mono">${x.model_id}</td><td>${x.attempt}</td>
+    <td>${x.avg_quality==null?"—":x.avg_quality.toFixed(2)}</td><td>${x.json_valid}</td>
+    <td>${x.p95_latency_s.toFixed(2)}s</td>
+    <td>${x.monthly_cost_usd==null?"unknown":"$"+Math.round(x.monthly_cost_usd).toLocaleString()}</td>
+    <td>${x.savings_pct==null?"—":(x.savings_pct>0?"+":"")+x.savings_pct.toFixed(1)+"%"}</td>
+    <td class="st-${x.status}">${x.status}</td></tr>`).join("");
+  v.innerHTML = `
+    <div class="vline"><span class="vword">${r.verdict.replace("_"," ")}</span>
+      ${r.recommended_model?`<span class="vmodel">→ ${r.recommended_model}</span>`:""}
+      <span class="vconf">confidence: ${r.confidence}</span></div>
+    <div class="vsum">${esc(r.summary)}</div>
+    <table><thead><tr><th>Model</th><th>Att</th><th>Quality/5</th><th>JSON</th><th>p95</th><th>Monthly</th><th>Savings</th><th>Status</th></tr></thead>
+    <tbody>${rows}</tbody></table>
+    <div class="vnotes"><b>Migration notes:</b> ${esc(r.migration_notes)}</div>
+    ${r.caveats.length?`<ul class="cavs">${r.caveats.map(c=>`<li>${esc(c)}</li>`).join("")}</ul>`:""}`;
+  v.scrollIntoView({behavior:"smooth", block:"nearest"});
+}
+
+$("pf-btn").onclick = async () => {
+  $("pf-btn").disabled = true; $("pf-btn").textContent = "Preflight running… (~30s)";
+  const out = $("preflight-out"); out.hidden = false; out.innerHTML = `<h2>Preflight</h2><div class="empty">probing live endpoint…</div>`;
+  try {
+    const body = selModels.size ? { models: [...selModels] } : {};
+    const d = await j("/api/preflight", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify(body) });
+    const checks = Object.keys(d.models[0].checks);
+    out.innerHTML = `<h2>Preflight — live capability matrix</h2>
+      <table><thead><tr><th>model</th>${checks.map(c=>`<th>${c.replace("_"," ").slice(0,7)}</th>`).join("")}</tr></thead>
+      <tbody>${d.models.map(m=>`<tr><td class="model" title="${m.id}">${m.id.split("/").pop()}</td>
+        ${checks.map(c=>{const k=m.checks[c];return `<td class="${k.ok?"ok":"no"}" title="${esc(k.note)}">${k.ok?"✓":"✗"}</td>`}).join("")}</tr>`).join("")}</tbody></table>`;
+  } catch(e) { out.innerHTML = `<h2>Preflight</h2><div class="empty">error: ${e.message}</div>`; }
+  $("pf-btn").disabled = false; $("pf-btn").textContent = "Preflight selected models";
+};
+</script>
+</body>
+</html>
