@@ -89,7 +89,7 @@ Other entry points:
 tf-migrate models                 # live Token Factory catalog
 tf-migrate run workloads/extraction.yaml
 tf-migrate run --prompt "I run a ticket-classification service on gpt-4o ..."   # free-text intake
-tf-migrate run workloads/summarization.yaml --candidates "meta-llama/Llama-3.3-70B-Instruct,Qwen/Qwen2.5-72B-Instruct"
+tf-migrate run workloads/extraction.yaml --candidates "google/gemma-3-27b-it,Qwen/Qwen3-30B-A3B-Instruct-2507"   # pin candidates (reliably triggers the retry-fix arc)
 ```
 
 ## Bring your own workload
